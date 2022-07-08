@@ -9,17 +9,46 @@ function App() {
   const exercises3 = 14
   return (
     <div>
-      <h1>{course}</h1>
-      <p>
-        {part1} {exercises1}
-      </p>
-      <p>
-        {part2} {exercises2}
-      </p>
-      <p>
-        {part3} {exercises3}
-      </p>
-      <p>Number of exercises {exercises1 + exercises2 + exercises3}</p>
+      <Header course={course} />
+      <Content name={part1} num={exercises1}/>
+      <Content name={part2} num={exercises2}/>
+      <Content name={part3} num={exercises3}/>
+      <Total num={exercises1 + exercises2 + exercises3}/>
+    </div>
+  );
+}
+{/* <h1>{course}</h1>
+<p>
+  {part1} {exercises1}
+</p>
+<p>
+  {part2} {exercises2}
+</p>
+<p>
+  {part3} {exercises3}
+</p>
+<p>Number of exercises {exercises1 + exercises2 + exercises3}</p> */}
+
+function Header(props) {
+  return (
+    <div>
+      <h1>{props.course}</h1>
+    </div>
+  );
+}
+
+function Content(props) {
+  return (
+    <div>
+      <p>{props.name} {props.num}</p>
+    </div>
+  );
+}
+
+function Total(props) {
+  return (
+    <div>
+      <p>Number of exercises {props.num}</p>
     </div>
   );
 }
