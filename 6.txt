@@ -1,0 +1,11 @@
+note over browser:
+js-code executes event handler on new note submission:
+end note
+browser->browser append new note to the notes array and render on the page
+browser->server: HTTP POST note to https://studies.cs.helsinki.fi/exampleapp/new_note_spa
+note over server:
+server appends the note in the form
+to the server-side notes array in the form
+end note
+server-->browser: HTTP status code 201
+server-->browser: The request has been fulfilled and has resulted in one or more new resources being created.
