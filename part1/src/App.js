@@ -1,17 +1,32 @@
 
+function applyToAll(arr, func) {
+  for (let i = 0; i < arr.length; i++) {
+    arr[i] = func(arr[i])
+  }
+}
+
+
 function App() {
   const course = 'Half Stack application development'
-  const part1 = 'Fundamentals of React'
-  const exercises1 = 10
-  const part2 = 'Using props to pass data'
-  const exercises2 = 7
-  const part3 = 'State of a component'
-  const exercises3 = 14
+  const parts = [
+    {
+      name: 'Fundamentals of React',
+      exercises: 10
+    },
+    {
+      name: 'Using props to pass data',
+      exercises: 7
+    },
+    {
+      name: 'State of a component',
+      exercises: 14
+    }
+  ]
   return (
     <div>
       <Header course={course} />
-      <Content p1={part1} e1={exercises1} p2={part2} e2={exercises2} p3={part3} e3={exercises3} />
-      <Total num={exercises1 + exercises2 + exercises3}/>
+      <Content parts={parts} />
+      <Total parts={parts}/>
     </div>
   );
 }
@@ -35,12 +50,10 @@ function Header(props) {
   );
 }
 
-function Content(props){
+function Content({parts}){
   return (
     <div>
-      <Part part={props.p1} exercises={props.e1} />
-      <Part part={props.p2} exercises={props.e2} />
-      <Part part={props.p3} exercises={props.e3} />
+      {parts.map(part => <Part part={part.name} exercises={part.exercises} />)}
     </div>
   );
 }
@@ -54,10 +67,10 @@ function Part(props) {
 }
 
 
-function Total(props) {
+function Total({parts}) {
   return (
     <div>
-      <p>Number of exercises {props.num}</p>
+      <p>Number of exercises {parts.reduce((carry, part) => carry + part.exercises, 0)}</p>
     </div>
   );
 }
