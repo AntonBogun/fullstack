@@ -33,6 +33,47 @@ function App() {
     </div>
   );
 }
+function Testing() {
+  return (
+    <div>
+      <Timer />
+      <Timer2 />
+      <Timer3 />
+      {/* <Timer4 /> */}
+      {/* desync by 1 second every 25 secs, or extremely quickly when not visible */}
+    </div>
+  );
+}
+
+function Timer() {
+  const [time, setTime] = useState(0);
+  setTimeout(() => setTime(time + 1), 1000);
+  return (
+    <div>
+      <h1>{time}</h1>
+    </div>
+  );
+}
+function Timer2() {
+  const [time, setTime] = useState(0);
+  setTimeout(() => setTime(time + 0.1), 100);
+  return (
+    <div>
+      {/*format time to 1 decimal*/}
+      <h1>{time.toFixed(1)}</h1>
+    </div>
+  );
+}
+function Timer3() {
+  const [time, setTime] = useState(0);
+  const [time2, setTime2] = useState(0);//it knows??
+  setTimeout(() => {setTime(time + 3); setTime2(time2 + 4)}, 2000);
+  return (
+    <div>
+      <h2>{time}, {time2}</h2>
+    </div>
+  );
+}
 
 //React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
 //now I see how it knows.
