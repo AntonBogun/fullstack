@@ -1,4 +1,4 @@
-
+import {useState} from 'react';
 function applyToAll(arr, func) {
   for (let i = 0; i < arr.length; i++) {
     arr[i] = func(arr[i])
@@ -29,9 +29,30 @@ function App() {
       <Header course={course.name} />
       <Content parts={course.parts} />
       <Total parts={course.parts}/>
+      {/* <Testing /> */}
     </div>
   );
 }
+
+//React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+//now I see how it knows.
+// function Timer4() {
+//   const [state, setState] = useState(0);
+//   if (state === 0) {
+//     const [time, setTime] = useState(0);
+//     const [time2, setTime2] = useState(0);
+//   }else{
+//     const [time2, setTime2] = useState(0);
+//     const [time, setTime] = useState(0);
+//   }
+//   setTimeout(() => {setState((state + 1)%2); setTime(time + Math.PI); setTime2(time2 + Math.E)}, 1000);
+//   return (
+//     <div>
+//       {/*format to 3 decimals*/}
+//       <h3>{time.toFixed(3)}, {time2.toFixed(3)}</h3>
+//     </div>
+//   );
+// }
 {/* <h1>{course}</h1>
 <p>
   {part1} {exercises1}
@@ -55,16 +76,15 @@ function Header(props) {
 function Content({parts}){
   return (
     <div>
-      {parts.map(part => <Part part={part.name} exercises={part.exercises} />)}
+      {parts.map(part => <div key={part.name}><Part part={part.name} exercises={part.exercises} /> </div>)}
+      {/* notice the key attribute, which is a unique identifier for each element in an array. */}
     </div>
   );
 }
 
 function Part(props) {
   return (
-    <div>
       <p>{props.part} {props.exercises}</p>
-    </div>
   );
 }
 
