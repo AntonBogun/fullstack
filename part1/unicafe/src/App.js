@@ -5,137 +5,73 @@ function applyToAll(arr, func) {
   }
 }
 
+// final result:
+// <h1>give feedback</h1>
+// buttons: good, neutral, bad
+// <h1>statistics</h1>
+// if none: <p>No feedback given</p>
+// if some: table of:
+// good, amount
+// neutral, amount
+// bad, amount
+// total, amount
+// average, value (1,0,-1 for good, neutral, bad)
+// positive, %
+
+
 
 function App() {
-  const course = {
-    name: 'Half Stack application development',
-    parts: [
-      {
-        name: 'Fundamentals of React',
-        exercises: 10
-      },
-      {
-        name: 'Using props to pass data',
-        exercises: 7
-      },
-      {
-        name: 'State of a component',
-        exercises: 14
-      }
-    ]
+  const [good, setGood] = useState(0)
+  const [neutral, setNeutral] = useState(0)
+  const [bad, setBad] = useState(0)
+  // total and average are calculated on the spot
+  return (
+    <div>
+      <h1>give feedback</h1>
+      <button onClick={() => setGood(good + 1)}>good</button>
+      <button onClick={() => setNeutral(neutral + 1)}>neutral</button>
+      <button onClick={() => setBad(bad + 1)}>bad</button>
+      <h1>statistics</h1>
+      <Statistics good={good} neutral={neutral} bad={bad} />
+    </div>
+  );
+}
+
+// enum for StatisticsLine to handle percentages
+const Feedback = {
+  VALUE:0,
+  PERCENTAGE:1
+}
+
+function Statistics({good, neutral, bad}) {
+  const total = good + neutral + bad;
+  if (total === 0) {
+    return <p>No feedback given</p>
   }
+  const average = (good - bad) / total;
+  const positive = good / total;
   return (
-    <div>
-      <Header course={course.name} />
-      <Content parts={course.parts} />
-      <Total parts={course.parts}/>
-      {/* <Testing /> */}
-    </div>
-  );
-}
-function Testing() {
-  return (
-    <div>
-      <Timer />
-      <Timer2 />
-      <Timer3 />
-      {/* <Timer4 /> */}
-      {/* desync by 1 second every 25 secs, or extremely quickly when not visible */}
-    </div>
+    <table>
+      <tbody>
+        <StatisticsLine text="good" value={good} type={Feedback.VALUE} />
+        <StatisticsLine text="neutral" value={neutral} type={Feedback.VALUE} />
+        <StatisticsLine text="bad" value={bad} type={Feedback.VALUE} />
+        <StatisticsLine text="total" value={total} type={Feedback.VALUE} />
+        <StatisticsLine text="average" value={average} type={Feedback.VALUE} />
+        <StatisticsLine text="positive" value={positive*100} type={Feedback.PERCENTAGE} />
+      </tbody>
+    </table>
   );
 }
 
-function Timer() {
-  const [time, setTime] = useState(0);
-  setTimeout(() => setTime(time + 1), 1000);
+function StatisticsLine({text, value, type}) {
   return (
-    <div>
-      <h1>{time}</h1>
-    </div>
-  );
-}
-function Timer2() {
-  const [time, setTime] = useState(0);
-  setTimeout(() => setTime(time + 0.1), 100);
-  return (
-    <div>
-      {/*format time to 1 decimal*/}
-      <h1>{time.toFixed(1)}</h1>
-    </div>
-  );
-}
-function Timer3() {
-  const [time, setTime] = useState(0);
-  const [time2, setTime2] = useState(0);//it knows??
-  setTimeout(() => {setTime(time + 3); setTime2(time2 + 4)}, 2000);
-  return (
-    <div>
-      <h2>{time}, {time2}</h2>
-    </div>
+    <tr>
+      <td>{text}</td>
+      <td>{value}{type === Feedback.PERCENTAGE ? ' %' : ''}</td>
+    </tr>
   );
 }
 
-//React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
-//now I see how it knows.
-// function Timer4() {
-//   const [state, setState] = useState(0);
-//   if (state === 0) {
-//     const [time, setTime] = useState(0);
-//     const [time2, setTime2] = useState(0);
-//   }else{
-//     const [time2, setTime2] = useState(0);
-//     const [time, setTime] = useState(0);
-//   }
-//   setTimeout(() => {setState((state + 1)%2); setTime(time + Math.PI); setTime2(time2 + Math.E)}, 1000);
-//   return (
-//     <div>
-//       {/*format to 3 decimals*/}
-//       <h3>{time.toFixed(3)}, {time2.toFixed(3)}</h3>
-//     </div>
-//   );
-// }
-{/* <h1>{course}</h1>
-<p>
-  {part1} {exercises1}
-</p>
-<p>
-  {part2} {exercises2}
-</p>
-<p>
-  {part3} {exercises3}
-</p>
-<p>Number of exercises {exercises1 + exercises2 + exercises3}</p> */}
-
-function Header(props) {
-  return (
-    <div>
-      <h1>{props.course}</h1>
-    </div>
-  );
-}
-
-function Content({parts}){
-  return (
-    <div>
-      {parts.map(part => <div key={part.name}><Part part={part.name} exercises={part.exercises} /> </div>)}
-      {/* notice the key attribute, which is a unique identifier for each element in an array. */}
-    </div>
-  );
-}
-
-function Part(props) {
-  return (
-      <p>{props.part} {props.exercises}</p>
-  );
-}
-
-
-function Total({parts}) {
-  return (
-    <div>
-      <p>Number of exercises {parts.reduce((carry, part) => carry + part.exercises, 0)}</p>
-    </div>
-  );
-}
 
 export default App;
