@@ -6,6 +6,8 @@ function App() {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
+  const [renderNotif, setRenderNotif] = useState('DO_NOT_RENDER')
+  const [renderData, setRenderData] = useState("")
   useEffect(() => {
     communicate.getAll().then(initialPersons => {
       setPersons(initialPersons)
@@ -20,11 +22,19 @@ function App() {
       if (window.confirm(`${name} is already added to phonebook, replace the old number with a new one?`)) {
         communicate.update(personExists.id, {name, number}).then(updatedPerson => {
           setPersons(persons.map(person => person.id !== personExists.id ? person : updatedPerson))
+          setRenderNotif('UPDATED_PERSON')
+          setRenderData(name)
+        }).catch(error => {
+          setPersons(persons.filter(person => person.id !== personExists.id))
+          setRenderNotif('NOT_FOUND')
+          setRenderData(name)
         })
       }
     }else{
       communicate.create({name, number}).then(newPerson => {
         setPersons(persons.concat(newPerson))
+        setRenderNotif('ADDED_NEW_PERSON')
+        setRenderData(newPerson.name)
       })
     }
   }
@@ -47,6 +57,12 @@ function App() {
       if (window.confirm(`Delete ${person.name}?`)) {
         communicate.remove(person.id).then(() => {
           setPersons(persons.filter(p => p.id !== person.id))
+          setRenderNotif('DELETED_PERSON')
+          setRenderData(person.name)
+        }).catch(error => {
+          setPersons(persons.filter(p => p.id !== person.id))
+          setRenderNotif('NOT_FOUND')
+          setRenderData(person.name)
         })
       }
     }
@@ -55,6 +71,8 @@ function App() {
   return (
     <div>
       <h1>Phonebook</h1>
+      <Notification renderNotif={renderNotif} renderData={renderData}
+        setRenderNotif={setRenderNotif} />
       <Filter filter={filter} filterChange={filterChange} />
       <AddNewPerson newName={newName} nameChange={nameChange}
       newNumber={newNumber} numberChange={numberChange} handleSubmit={handleSubmit} />
@@ -132,5 +150,37 @@ function Person(props) {
   )
 }
 
+//Notification:
+//if DO_NOT_RENDER, return nothing
+//if render, start timer for 5 seconds, then set renderNotif to DO_NOT_RENDER
+//ADDED_NEW_PERSON => green, `Added ${renderData}`
+//NOT_FOUND => red, `Information of ${renderData} has already been removed from server`
+
+function Notification(props) {
+  const [timer, setTimer] = useState(null)
+  useEffect(() => {
+    if (props.renderNotif !== 'DO_NOT_RENDER') {
+      setTimer(setTimeout(() => {
+        setTimer(null)
+        props.setRenderNotif('DO_NOT_RENDER')
+      }, 5000))
+    }
+  }, [props.renderNotif])
+  if (props.renderNotif === 'DO_NOT_RENDER') {
+    return null
+  }
+  if (props.renderNotif === 'ADDED_NEW_PERSON') {
+    return <p style={{color: 'green'}} className="notif">Added {props.renderData}</p>
+  }
+  if (props.renderNotif === 'UPDATED_PERSON') {
+    return <p style={{color: 'green'}} className="notif">Updated {props.renderData}</p>
+  }
+  if (props.renderNotif === 'DELETED_PERSON') {
+    return <p style={{color: 'salmon'}} className="notif">Deleted {props.renderData}</p>
+  }
+  if (props.renderNotif === 'NOT_FOUND') {
+    return <p style={{color: 'red'}} className="notif">Information of {props.renderData} has already been removed from server</p>
+  }
+}
 
 export default App;
