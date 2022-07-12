@@ -1,16 +1,15 @@
 import {useState, useEffect} from 'react'
 import axios from 'axios'
+import communicate from './communicate'
 
 function App() {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
-      })
+    communicate.getAll().then(initialPersons => {
+      setPersons(initialPersons)
+    })
   }, [])
   
 
@@ -18,15 +17,16 @@ function App() {
     //check if name already exists
     const personExists = persons.find(person => person.name === name)
     if (personExists) {//case sensitive, though wasn't specified otherwise in the exercise
-      alert(`${name} is already added to phonebook`)
-      return
+      if (window.confirm(`${name} is already added to phonebook, replace the old number with a new one?`)) {
+        communicate.update(personExists.id, {name, number}).then(updatedPerson => {
+          setPersons(persons.map(person => person.id !== personExists.id ? person : updatedPerson))
+        })
+      }
+    }else{
+      communicate.create({name, number}).then(newPerson => {
+        setPersons(persons.concat(newPerson))
+      })
     }
-    const newPerson = {
-      name: name,//also doesn't check if name is empty or whitespace
-      number: number,//I bet that won't cause any problems whatsoever
-      id: persons.length + 1
-    }
-    setPersons(persons.concat(newPerson))
   }
 
   const [filter, setFilter] = useState('')
@@ -40,13 +40,25 @@ function App() {
     setNewNumber("")
   }
 
+
+
+  const deletePersonFactory = (person) => {
+    return () => {
+      if (window.confirm(`Delete ${person.name}?`)) {
+        communicate.remove(person.id).then(() => {
+          setPersons(persons.filter(p => p.id !== person.id))
+        })
+      }
+    }
+  }
+
   return (
     <div>
       <h1>Phonebook</h1>
       <Filter filter={filter} filterChange={filterChange} />
       <AddNewPerson newName={newName} nameChange={nameChange}
       newNumber={newNumber} numberChange={numberChange} handleSubmit={handleSubmit} />
-      <Numbers persons={persons} filter={filter} />
+      <Numbers persons={persons} filter={filter} delPerson={deletePersonFactory} />
     </div>
   );
 }
@@ -102,7 +114,8 @@ function Numbers(props) {
       <h1>Numbers</h1>
       <table>
         <tbody>
-          {personsToShow.map(person => <Person key={person.id} person={person} />)}
+          {personsToShow.map(person => <Person key={person.id} person={person} 
+          delPerson={props.delPerson} />)}
         </tbody>
       </table>
     </div>
@@ -114,6 +127,7 @@ function Person(props) {
     <tr>
       <td>{props.person.name}</td>
       <td>{props.person.number}</td>
+      <td><button onClick={props.delPerson(props.person)}>delete</button></td>
     </tr>
   )
 }

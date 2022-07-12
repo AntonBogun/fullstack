@@ -80,7 +80,7 @@ function App() {
           console.log(e)
           country.weather = {}
         }
-        const newCountries = [...countries]
+        const newCountries = [...countries]//should be using .map/filter here actually
         newCountries[newCountries.indexOf(country)] = country
         setCountries(newCountries)
       }
