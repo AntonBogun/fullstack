@@ -1,5 +1,9 @@
 import {useState, useEffect} from 'react'
 import axios from 'axios'
+import {secretkey} from './secretkey'
+//file looks like:
+//const secretkey="..."
+//export {secretkey}
 
 //get country info from https://restcountries.com/v3.1/all
 //input partial country name:
@@ -22,6 +26,15 @@ import axios from 'axios'
 //picture: <img src={country.flag} alt={`flag of ${country.name}`} />
 
 
+//weather api:
+//country.weather={temp, weather, wdesc, wind}, initially no country has weather,
+//it is requested in full information view, until then display "requesting weather..."
+//<h2>Weather in {country.capital}</h2>
+//<p>temperature: {temp} Celsius</p> 
+//<img src={`https://openweathermap.org/img/wn/{weather}@4x.png`} alt={wdesc} />
+//<p>wind: {wind} m/s</p>
+
+
 function App() {
   const [countries, setCountries] = useState([])
   const [filter, setFilter] = useState('')
@@ -31,7 +44,7 @@ function App() {
       // console.log(Object.values(country.languages)) //why is it a dictionary???
       return {
         name: country.name.common,
-        capital: "capital" in country ? country.capital : ["no capital"],
+        capital: "capital" in country ? country.capital[0] : "no capital",
         area: country.area,
         //Antarctica is a special case
         languages: "languages" in country ? Object.values(country.languages) : ["no languages"],
@@ -44,6 +57,35 @@ function App() {
         setCountries(response.data.map(stripUselessData))
       })
   }, [])
+  const tryRequestWeather = (country) => {
+    if (country.capital === "no capital" || "weather" in country) {
+      return
+    }
+    const stripUselessData = weather => {
+      return {
+        temp: weather.main.temp-273.15,
+        weather: weather.weather[0].icon,
+        wdesc: weather.weather[0].main,
+        wind: weather.wind.speed
+      }
+    }
+    axios
+      .get(`https://api.openweathermap.org/data/2.5/weather?q=${country.capital}&appid=${secretkey}`)
+      .then(response => {
+        console.log("requested weather")//seems to use 2+ requests per country, probably because second
+        try {//request slips through before the first one is finished. Not going to deal with it.
+          country.weather = stripUselessData(response.data)
+        }
+        catch (e) {
+          console.log(e)
+          country.weather = {}
+        }
+        const newCountries = [...countries]
+        newCountries[newCountries.indexOf(country)] = country
+        setCountries(newCountries)
+      }
+      )
+  }
 
   const handleFilterChange = (event) => {
     const lowerCase = event.target.value.toLowerCase()
@@ -64,7 +106,8 @@ function App() {
   return (
     <div>
       <FindCountry filter={filter} filterChange={handleFilterChange} />
-      <DisplayMatch countries={countries} filter={filter} onClick={handleShowClickFactory} />
+      <DisplayMatch countries={countries} filter={filter} onClick={handleShowClickFactory}
+        requestWeather={tryRequestWeather} />
     </div>
   )
 }
@@ -77,7 +120,7 @@ function FindCountry({filter, filterChange}) {
   )
 }
 
-function DisplayMatch({countries, filter, onClick}) {
+function DisplayMatch({countries, filter, onClick, requestWeather}) {
   let filteredCountries = []
   //filter using for as that allows to break out of the loop upon finding exact match
   for (let i = 0; i < countries.length; i++) {
@@ -98,7 +141,7 @@ function DisplayMatch({countries, filter, onClick}) {
     return (
       <div>
         <h1>{filteredCountries[0].name}</h1>
-        <p>capital: {filteredCountries[0].capital.join(", ")}
+        <p>capital: {filteredCountries[0].capital}
         <br />
         area: {filteredCountries[0].area}
         </p>
@@ -107,6 +150,7 @@ function DisplayMatch({countries, filter, onClick}) {
           {filteredCountries[0].languages.map(language => <li key={language}>{language}</li>)}
         </ul>
         <img src={filteredCountries[0].flag} alt={`flag of ${filteredCountries[0].name}`} />
+        <Weather country={filteredCountries[0]} requestWeather={requestWeather} />
       </div>
     )
   } else if (filteredCountries.length > 10) {
@@ -130,7 +174,36 @@ function DisplayMatch({countries, filter, onClick}) {
   }
 }
 
-
+function Weather({country, requestWeather}) {
+  useEffect(() => {
+    requestWeather(country)
+  })
+  if ("weather" in country) {
+    try{
+    return (
+      <div>
+        <h2>Weather in {country.capital}</h2>
+        <p>temperature: {country.weather.temp.toFixed(2)} Celsius</p>
+        <img src={`https://openweathermap.org/img/wn/${country.weather.weather}@4x.png`} alt={country.weather.wdesc} />
+        <p>wind: {country.weather.wind} m/s</p>
+      </div>
+    )
+    } catch (e) {
+      console.log(e)
+      return <div>Error requesting weather</div>
+    }
+  } else {
+    if (country.capital === "no capital") {
+      return <div>No capital, no weather</div>
+    }
+    return (
+      <div>
+        <h2>Weather in {country.capital}</h2>
+        <p>requesting weather...</p>
+      </div>
+    )
+  }
+}
 
 
 
