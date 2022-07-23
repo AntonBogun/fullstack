@@ -1,0 +1,12 @@
+{
+  "name": "418test",
+  "version": "1.0.0",
+  "description": "418",
+  "main": "tea.js",
+  "scripts": {
+    "test": "echo \"No test required for teapot\"",
+    "start": "node tea.js"
+  },
+  "author": "",
+  "license": "TEA"
+}
